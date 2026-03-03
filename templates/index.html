@@ -1,36 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"><title>Sentinel OS - General</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel OS Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root { --bg: #0f111a; --sidebar: #161925; --accent: #00ff00; --text: #e1e1e1; --card: #1c202f; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; }
-        .sidebar { width: 250px; background: var(--sidebar); height: 100vh; padding: 20px; border-right: 1px solid #2d3748; position: fixed; }
-        .nav-item { display: block; padding: 12px; color: #a0aec0; text-decoration: none; border-radius: 8px; margin-bottom: 10px; }
-        .active { background: #2d3748; color: var(--accent); border-left: 4px solid var(--accent); }
-        .main { margin-left: 280px; padding: 40px; flex: 1; }
-        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #2d3748; }
-        input { width: 100%; padding: 12px; background: #0b0d13; border: 1px solid #2d3748; color: #fff; border-radius: 8px; margin: 10px 0; }
-        .btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        :root { --bg: #0f111a; --side: #161925; --card: #1c202f; --blue: #3498db; --green: #2ecc71; --text: #e1e1e1; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: row; min-height: 100vh; }
+        
+        .sidebar { width: 260px; background: var(--side); display: flex; flex-direction: column; position: fixed; height: 100vh; transition: 0.3s; }
+        .nav-item { padding: 15px 25px; color: #a0aec0; text-decoration: none; display: flex; align-items: center; border-left: 4px solid transparent; }
+        .nav-item.active { background: rgba(52, 152, 219, 0.1); color: var(--blue); border-left-color: var(--blue); }
+        .nav-item i { margin-right: 15px; width: 20px; }
+
+        .branding { margin-top: auto; padding: 25px; border-top: 1px solid #2d3748; text-align: center; }
+        .bot-name { font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; color: #fff; }
+        .pow { font-size: 0.6rem; color: var(--blue); text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; line-height: 1.5; }
+
+        .main { margin-left: 260px; padding: 40px; width: 100%; transition: 0.3s; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748; }
+        
+        /* Form Styling */
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #2d3748; }
+        input[type="text"] { background: #0b0d13; border: 1px solid #2d3748; color: #fff; padding: 8px; border-radius: 5px; width: 100px; }
+        
+        .switch { position: relative; width: 40px; height: 20px; }
+        .switch input { opacity: 0; }
+        .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #4a5568; border-radius: 20px; transition: 0.4s; cursor: pointer; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.4s; }
+        input:checked + .slider { background: var(--green); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .save-btn { width: 100%; padding: 15px; background: var(--blue); border: none; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+
+        /* Mobile Fix */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main { margin-left: 0; padding: 20px; }
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <h2 style="color: var(--accent);">SENTINEL OS</h2>
-        <a href="/" class="nav-item active"><i class="fas fa-home"></i> General</a>
-        <a href="/moderation" class="nav-item"><i class="fas fa-shield-halved"></i> Moderation</a>
-        <a href="/welcome" class="nav-item"><i class="fas fa-door-open"></i> Welcome</a>
-    </div>
-    <div class="main">
-        <h1>🏠 General Settings</h1>
-        <div class="card">
-            <form action="/update" method="POST">
-                <label>Bot Nickname</label><input type="text" name="nickname" value="{{ config.nickname }}">
-                <label>Prefix</label><input type="text" name="prefix" value="{{ config.prefix }}">
-                <button type="submit" class="btn">SAVE CHANGES</button>
-            </form>
+        <h2 style="padding: 25px; color: var(--blue); margin: 0;">Sentinel OS</h2>
+        <a href="#" class="nav-item active"><i class="fas fa-cog"></i> General</a>
+        <a href="#" class="nav-item"><i class="fas fa-shield-halved"></i> Moderation</a>
+        <a href="#" class="nav-item"><i class="fas fa-robot"></i> Automod</a>
+        <div class="branding">
+            <div class="bot-name">SENTINEL BOT</div>
+            <div class="pow">p o w e r e d  b y <br> s e n t i n e l  OS</div>
         </div>
+    </div>
+
+    <div class="main">
+        <form action="/update_settings" method="POST">
+            <div class="grid">
+                <div class="card">
+                    <h3>🏠 Bot Settings</h3>
+                    <div class="row"><span>Prefix</span><input type="text" name="prefix" value="{{ config.prefix }}"></div>
+                    <div class="row"><span>Nickname</span><input type="text" name="nickname" value="{{ config.nickname }}"></div>
+                    <div class="row"><span>Maintenance</span><label class="switch"><input type="checkbox" name="maintenance" value="ON" {% if config.maintenance == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
+                </div>
+                <div class="card">
+                    <h3>🤖 Automod</h3>
+                    <div class="row"><span>Anti-Spam</span><label class="switch"><input type="checkbox" name="anti_spam" value="ON" {% if config.anti_spam == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
+                    <div class="row"><span>Block Links</span><label class="switch"><input type="checkbox" name="block_links" value="ON" {% if config.block_links == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
+                </div>
+            </div>
+            <button type="submit" class="save-btn">DEPLOY CHANGES 🚀</button>
+        </form>
     </div>
 </body>
 </html>
