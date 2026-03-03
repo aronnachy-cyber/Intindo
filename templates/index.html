@@ -3,76 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel OS Dashboard</title>
+    <title>Sentinel OS - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
-        :root { --bg: #0f111a; --side: #161925; --card: #1c202f; --blue: #3498db; --green: #2ecc71; --text: #e1e1e1; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: row; min-height: 100vh; }
-        
-        .sidebar { width: 260px; background: var(--side); display: flex; flex-direction: column; position: fixed; height: 100vh; transition: 0.3s; }
-        .nav-item { padding: 15px 25px; color: #a0aec0; text-decoration: none; display: flex; align-items: center; border-left: 4px solid transparent; }
-        .nav-item.active { background: rgba(52, 152, 219, 0.1); color: var(--blue); border-left-color: var(--blue); }
-        .nav-item i { margin-right: 15px; width: 20px; }
+        :root {
+            /* 🎨 Color Palette from Your Input */
+            --bg-dark: #1e2530;
+            --sidebar-bg: #252d3a;
+            --card-bg: #2c3545;
+            --accent-blue: #3498db;
+            --accent-green: #2ecc71;
+            --text-main: #ffffff;
+            --text-dim: #a0aec0;
+            --border-color: #3e4a5d;
+        }
 
-        .branding { margin-top: auto; padding: 25px; border-top: 1px solid #2d3748; text-align: center; }
-        .bot-name { font-weight: bold; font-size: 1.1rem; letter-spacing: 1px; color: #fff; }
-        .pow { font-size: 0.6rem; color: var(--blue); text-transform: uppercase; letter-spacing: 3px; margin-top: 5px; line-height: 1.5; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+        }
 
-        .main { margin-left: 260px; padding: 40px; width: 100%; transition: 0.3s; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #2d3748; }
-        
-        /* Form Styling */
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #2d3748; }
-        input[type="text"] { background: #0b0d13; border: 1px solid #2d3748; color: #fff; padding: 8px; border-radius: 5px; width: 100px; }
-        
-        .switch { position: relative; width: 40px; height: 20px; }
-        .switch input { opacity: 0; }
-        .slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #4a5568; border-radius: 20px; transition: 0.4s; cursor: pointer; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.4s; }
-        input:checked + .slider { background: var(--green); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        /* --- 📂 Responsive Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: 0.3s;
+        }
 
-        .save-btn { width: 100%; padding: 15px; background: var(--blue); border: none; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        .sidebar-header {
+            padding: 25px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+            letter-spacing: 1px;
+        }
 
-        /* Mobile Fix */
-        @media (max-width: 768px) {
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: 0.3s;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: white;
+            border-left-color: var(--accent-blue);
+        }
+
+        /* --- 🛡️ Branding Corner --- */
+        .branding {
+            margin-top: auto;
+            padding: 25px;
+            border-top: 1px solid var(--border-color);
+        }
+        .bot-name { font-weight: bold; color: #fff; font-size: 1.1rem; letter-spacing: 1px; }
+        .powered-by { 
+            font-size: 0.65rem; 
+            color: var(--accent-blue); 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+            margin-top: 8px; 
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* --- 💻 Main Content Area --- */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        /* --- 📦 Grid System (The Core Layout) --- */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        /* Configuration Cards like Your Image */
+        .config-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+        .config-card:hover { border-color: var(--accent-blue); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        .card-header i { margin-right: 12px; color: var(--accent-blue); }
+
+        /* --- ⚙️ Settings Input Elements --- */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .setting-label { font-size: 0.95rem; color: var(--text-dim); }
+
+        input[type="text"], input[type="number"] {
+            background: #1e2530;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 120px;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: var(--accent-blue); outline: none; }
+
+        /* --- 🔘 Toggle Switch --- */
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #4a5568; transition: .4s; border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* Deploy Button */
+        .btn-deploy { width: 100%; padding: 15px; background: var(--accent-blue); border: none; color: #fff; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 1rem; margin-top: 20px; text-transform: uppercase; transition: 0.3s; }
+        .btn-deploy:hover { background: #007bb5; }
+
+        /* --- 📱 Media Queries (Mobile Optimization) --- */
+        @media screen and (max-width: 992px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media screen and (max-width: 768px) {
             body { flex-direction: column; }
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main { margin-left: 0; padding: 20px; }
-            .grid { grid-template-columns: 1fr; }
+            .sidebar { 
+                width: 100%; height: auto; position: relative; 
+                padding-bottom: 0; 
+            }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; box-sizing: border-box; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .branding { display: block; text-align: center; }
         }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <h2 style="padding: 25px; color: var(--blue); margin: 0;">Sentinel OS</h2>
-        <a href="#" class="nav-item active"><i class="fas fa-cog"></i> General</a>
-        <a href="#" class="nav-item"><i class="fas fa-shield-halved"></i> Moderation</a>
-        <a href="#" class="nav-item"><i class="fas fa-robot"></i> Automod</a>
+        <div class="sidebar-header">Sentinel OS</div>
+        
+        <nav>
+            <a href="#" class="nav-item active"><i class="fas fa-cog"></i> General</a>
+            <a href="#" class="nav-item"><i class="fas fa-shield-alt"></i> Moderation</a>
+            <a href="#" class="nav-item"><i class="fas fa-robot"></i> Automod</a>
+            <a href="#" class="nav-item"><i class="fas fa-users"></i> Roles</a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-bar"></i> Leveling</a>
+            <a href="#" class="nav-item"><i class="fas fa-star"></i> Starboard</a>
+        </nav>
+
         <div class="branding">
             <div class="bot-name">SENTINEL BOT</div>
-            <div class="pow">p o w e r e d  b y <br> s e n t i n e l  OS</div>
+            <div class="powered-by">p o w e r e d  b y <br> s e n t i n e l  OS</div>
         </div>
     </div>
 
-    <div class="main">
+    <div class="main-content">
+        <div class="header">
+            <h2>Bot Configuration</h2>
+            <div style="font-size: 0.9rem; color: var(--text-dim);">
+                AdminUser#1234 <i class="fas fa-user-circle" style="margin-left: 8px;"></i>
+            </div>
+        </div>
+
         <form action="/update_settings" method="POST">
-            <div class="grid">
-                <div class="card">
-                    <h3>🏠 Bot Settings</h3>
-                    <div class="row"><span>Prefix</span><input type="text" name="prefix" value="{{ config.prefix }}"></div>
-                    <div class="row"><span>Nickname</span><input type="text" name="nickname" value="{{ config.nickname }}"></div>
-                    <div class="row"><span>Maintenance</span><label class="switch"><input type="checkbox" name="maintenance" value="ON" {% if config.maintenance == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
+            <div class="dashboard-grid">
+                <div class="config-card">
+                    <div class="card-header"><i class="fas fa-sliders-h"></i> General Settings</div>
+                    <div class="setting-row">
+                        <span class="setting-label">Bot Prefix</span>
+                        <input type="text" name="prefix" value="!">
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Maintenance Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" name="maintenance">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>🤖 Automod</h3>
-                    <div class="row"><span>Anti-Spam</span><label class="switch"><input type="checkbox" name="anti_spam" value="ON" {% if config.anti_spam == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
-                    <div class="row"><span>Block Links</span><label class="switch"><input type="checkbox" name="block_links" value="ON" {% if config.block_links == 'ON' %}checked{% endif %}><span class="slider"></span></label></div>
+
+                <div class="config-card">
+                    <div class="card-header"><i class="fas fa-gavel"></i> Moderation</div>
+                    <div class="setting-row">
+                        <span class="setting-label">Log Channel ID</span>
+                        <input type="text" name="log_channel" placeholder="8821...">
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Mute Role System</span>
+                        <label class="switch">
+                            <input type="checkbox" name="mute_role" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="config-card">
+                    <div class="card-header"><i class="fas fa-shield-virus"></i> Automod Filters</div>
+                    <div class="setting-row">
+                        <span class="setting-label">Anti-Spam</span>
+                        <label class="switch">
+                            <input type="checkbox" name="anti_spam" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Block Links</span>
+                        <label class="switch">
+                            <input type="checkbox" name="block_links">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
                 </div>
             </div>
-            <button type="submit" class="save-btn">DEPLOY CHANGES 🚀</button>
+            
+            <button type="submit" class="btn-deploy">DEPLOY CHANGES 🚀</button>
         </form>
     </div>
+
 </body>
 </html>
