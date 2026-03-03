@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><title>Sentinel OS - Leveling</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #0f111a; --card: #1c202f; --accent: #00ff00; --text: #e1e1e1; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 40px; }
+        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid #2d3748; }
+        input { width: 100%; padding: 12px; background: #0b0d13; border: 1px solid #2d3748; color: #fff; border-radius: 8px; margin: 10px 0; }
+        .btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>📊 Leveling System</h1>
+    <div class="card">
+        <form action="/update" method="POST">
+            <label>XP Per Message</label>
+            <input type="number" name="xp_rate" value="{{ config.xp_rate }}">
+            <label>Level Up Message</label>
+            <input type="text" name="level_up_msg" value="{{ config.level_up_msg }}">
+            <button type="submit" class="btn">SAVE LEVELING SETTINGS</button>
+        </form>
+    </div>
+</body>
+</html>
