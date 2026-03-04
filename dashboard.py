@@ -4,14 +4,14 @@ from functools import wraps
 
 app = Flask(__name__)
 
-# 🔐 Secret Key (use env in production)
+# 🔐 Secret Key
 app.secret_key = os.environ.get("SECRET_KEY", "sentinel_ultra_private_key")
 
-# --- 👤 Credentials (default: admin / admin123) ---
+# 👤 Credentials
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS = os.environ.get("ADMIN_PASS", "admin123")
 
-# --- 🔒 Login Required Decorator ---
+# 🔒 Login Required Decorator
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -20,7 +20,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- ⚙️ Global Configuration ---
+# ⚙️ Global Configuration
 config = {
     "prefix": "!",
     "nickname": "Sentinel Bot",
@@ -34,14 +34,19 @@ config = {
     "yt_notifier": "OFF",
     "fb_notifier": "OFF",
     "xp_rate": "10",
+
+    # Welcome System
     "welcome_system": "OFF",
     "welcome_channel": "",
     "welcome_msg": "Hey {user}, welcome!",
-    "welcome_gifs": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3/l0MYC0LajBaCEgizu/giphy.gif"
+    "welcome_gifs": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3/l0MYC0LajBaCEgizu/giphy.gif",
+
+    # 🆕 Anti-Raid + Banned Words
+    "anti_raid": "OFF",
+    "banned_words": ""
 }
 
-# --- 🚪 Login / Logout ---
-
+# 🚪 Login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
@@ -63,13 +68,13 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# --- 🌐 Dashboard ---
-
+# 🌐 Dashboard
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html', config=config)
 
+# 🔄 Update Settings
 @app.route('/update', methods=['POST'])
 @login_required
 def update():
@@ -80,7 +85,8 @@ def update():
         "prefix", "nickname", "log_channel",
         "admin_role_id", "mod_role_id",
         "xp_rate", "welcome_channel",
-        "welcome_msg", "welcome_gifs"
+        "welcome_msg", "welcome_gifs",
+        "banned_words"  # 🆕 Added
     ]
 
     for field in fields:
@@ -90,16 +96,17 @@ def update():
     toggles = [
         "maintenance", "mute_role", "anti_spam",
         "block_links", "yt_notifier",
-        "fb_notifier", "welcome_system"
+        "fb_notifier", "welcome_system",
+        "anti_raid"  # 🆕 Added
     ]
 
     for toggle in toggles:
         config[toggle] = "ON" if request.form.get(toggle) else "OFF"
 
-    print(f"📡 Settings Updated by Admin: {config}")
+    print(f"📡 Settings Updated: {config}")
     return redirect(url_for('index'))
 
-# --- 🚀 Runner ---
+# 🚀 Runner
 def run_dashboard():
     port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port)
