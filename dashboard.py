@@ -1,15 +1,24 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import os
+from functools import wraps
 
 app = Flask(__name__)
 
-# 🔐 Secret Key (Better to use env variable in production)
+# 🔐 Secret Key (use env in production)
 app.secret_key = os.environ.get("SECRET_KEY", "sentinel_ultra_private_key")
 
-# --- 👤 Credentials ---
-# Default: admin / admin123
+# --- 👤 Credentials (default: admin / admin123) ---
 ADMIN_USER = os.environ.get("ADMIN_USER", "admin")
 ADMIN_PASS = os.environ.get("ADMIN_PASS", "admin123")
+
+# --- 🔒 Login Required Decorator ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("logged_in"):
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # --- ⚙️ Global Configuration ---
 config = {
@@ -31,7 +40,7 @@ config = {
     "welcome_gifs": "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJueGZ3bmZ3bmZ3/l0MYC0LajBaCEgizu/giphy.gif"
 }
 
-# --- 🚪 Login/Logout Routes ---
+# --- 🚪 Login / Logout ---
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -41,8 +50,9 @@ def login():
         password = request.form.get('password')
 
         if username != ADMIN_USER or password != ADMIN_PASS:
-            error = 'Invalid Credentials. Please try again.'
+            error = "Invalid Credentials. Try again."
         else:
+            session.clear()
             session['logged_in'] = True
             return redirect(url_for('index'))
 
@@ -53,22 +63,19 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# --- 🌐 Main Dashboard Route ---
+# --- 🌐 Dashboard ---
 
 @app.route('/')
+@login_required
 def index():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
     return render_template('index.html', config=config)
 
 @app.route('/update', methods=['POST'])
+@login_required
 def update():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-        
     global config
 
-    # 📝 Text fields
+    # 📝 Text Fields
     fields = [
         "prefix", "nickname", "log_channel",
         "admin_role_id", "mod_role_id",
@@ -79,7 +86,7 @@ def update():
     for field in fields:
         config[field] = request.form.get(field, config[field])
 
-    # 🔘 Toggle fields
+    # 🔘 Toggle Fields
     toggles = [
         "maintenance", "mute_role", "anti_spam",
         "block_links", "yt_notifier",
