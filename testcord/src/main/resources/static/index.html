@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Testcord — Discord-Compatible Bot Platform</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #e0e0e0; min-height: 100vh; }
+        .navbar { background: #16213e; padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #0f3460; }
+        .logo { font-size: 1.5rem; font-weight: 800; color: #5865f2; letter-spacing: -0.5px; }
+        .logo span { color: #eb459e; }
+        .nav-links a { color: #b5bac1; text-decoration: none; margin-left: 24px; font-size: 0.9rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #fff; }
+
+        .hero { text-align: center; padding: 80px 32px 60px; }
+        .hero h1 { font-size: 3rem; font-weight: 800; color: #fff; margin-bottom: 16px; }
+        .hero h1 span { color: #5865f2; }
+        .hero p { font-size: 1.15rem; color: #b5bac1; max-width: 600px; margin: 0 auto 40px; line-height: 1.6; }
+        .badge { display: inline-block; background: #5865f220; border: 1px solid #5865f2; color: #5865f2; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 20px; }
+
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; padding: 0 32px 60px; }
+        .card { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 28px; transition: border-color 0.2s, transform 0.2s; }
+        .card:hover { border-color: #5865f2; transform: translateY(-2px); }
+        .card-icon { font-size: 2rem; margin-bottom: 12px; }
+        .card h3 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+        .card p { font-size: 0.9rem; color: #b5bac1; line-height: 1.5; }
+        .code-block { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px 16px; margin-top: 12px; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #79c0ff; word-break: break-all; }
+
+        .dashboard { max-width: 1100px; margin: 0 auto; padding: 0 32px 60px; }
+        .dashboard h2 { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 24px; }
+        .section { background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+        .section h3 { font-size: 1rem; font-weight: 600; color: #b5bac1; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #b5bac1; margin-bottom: 6px; }
+        .form-group input { width: 100%; background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px 14px; color: #e0e0e0; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+        .form-group input:focus { border-color: #5865f2; }
+
+        .btn { display: inline-block; padding: 10px 20px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: background 0.2s, transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: #5865f2; color: #fff; }
+        .btn-primary:hover { background: #4752c4; }
+        .btn-danger { background: #ed4245; color: #fff; }
+        .btn-danger:hover { background: #c03537; }
+        .btn-secondary { background: #4e5058; color: #fff; }
+        .btn-secondary:hover { background: #6d6f78; }
+        .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+
+        .response-box { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 14px; margin-top: 14px; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #3fb950; max-height: 200px; overflow-y: auto; white-space: pre-wrap; display: none; }
+
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .info-item label { font-size: 0.8rem; color: #b5bac1; display: block; margin-bottom: 4px; }
+        .info-value { background: #0d1117; border: 1px solid #30363d; border-radius: 6px; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #79c0ff; word-break: break-all; }
+
+        .members-list { max-height: 200px; overflow-y: auto; }
+        .member-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0f3460; }
+        .member-name { font-size: 0.9rem; color: #e0e0e0; }
+        .member-id { font-size: 0.75rem; color: #72767d; font-family: monospace; }
+        .member-actions { display: flex; gap: 8px; }
+
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-online { background: #23a55a; }
+        .status-offline { background: #80848e; }
+
+        .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; background: #16213e; border-radius: 12px; padding: 6px; border: 1px solid #0f3460; }
+        .tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; color: #b5bac1; transition: all 0.2s; }
+        .tab.active { background: #5865f2; color: #fff; }
+        .tab:hover:not(.active) { background: #0f3460; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem; }
+        .alert-success { background: #23a55a20; border: 1px solid #23a55a; color: #23a55a; }
+        .alert-error { background: #ed424520; border: 1px solid #ed4245; color: #ed4245; }
+        .alert-info { background: #5865f220; border: 1px solid #5865f2; color: #5865f2; }
+
+        footer { text-align: center; padding: 32px; color: #72767d; font-size: 0.85rem; border-top: 1px solid #0f3460; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 2rem; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="logo">Test<span>cord</span></div>
+    <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="/h2-console" target="_blank">DB Console</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="badge">Discord-Compatible API Platform</div>
+    <h1>Build bots on <span>Testcord</span></h1>
+    <p>A self-hosted Discord-compatible gateway. Connect your bots using the same token system, REST API, and WebSocket gateway as Discord — just point to your server.</p>
+</section>
+
+<div class="features" id="features">
+    <div class="card">
+        <div class="card-icon">🔌</div>
+        <h3>WebSocket Gateway</h3>
+        <p>Bots connect via WebSocket and receive real-time events: <code>MESSAGE_CREATE</code>, <code>GUILD_MEMBER_ADD</code>, <code>GUILD_MEMBER_REMOVE</code>, and more.</p>
+        <div class="code-block">ws://your-host/gateway</div>
+    </div>
+    <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>REST API</h3>
+        <p>Full Discord-compatible REST endpoints for sending messages, managing members, banning users, and more.</p>
+        <div class="code-block">POST /channels/{id}/messages<br>GET  /guilds/{id}/members<br>DELETE /guilds/{id}/members/{id}</div>
+    </div>
+    <div class="card">
+        <div class="card-icon">🔑</div>
+        <h3>Bot Token Auth</h3>
+        <p>Issue bot tokens to authenticate. Bots send <code>Authorization: Bot &lt;token&gt;</code> just like Discord.</p>
+        <div class="code-block">Authorization: Bot MTExMTEx.xxxxx</div>
+    </div>
+    <div class="card">
+        <div class="card-icon">🔐</div>
+        <h3>OAuth2</h3>
+        <p>Full OAuth2 authorization code flow for dashboard logins. Compatible with Discord OAuth2 libraries.</p>
+        <div class="code-block">GET  /oauth2/authorize<br>POST /oauth2/token</div>
+    </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+    <h2>🛠️ Dashboard</h2>
+
+    <div class="tab-bar">
+        <div class="tab active" onclick="switchTab('auth')">Auth & Bots</div>
+        <div class="tab" onclick="switchTab('guilds')">Guilds</div>
+        <div class="tab" onclick="switchTab('channels')">Channels</div>
+        <div class="tab" onclick="switchTab('api')">API Tester</div>
+    </div>
+
+    <!-- AUTH TAB -->
+    <div id="tab-auth" class="tab-content active">
+        <div class="section">
+            <h3>Register / Login</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+                <div>
+                    <div class="form-group"><label>Username</label><input id="reg-username" placeholder="username" /></div>
+                    <div class="form-group"><label>Password</label><input id="reg-password" type="password" placeholder="password" /></div>
+                    <button class="btn btn-primary" onclick="register()">Register</button>
+                    <button class="btn btn-secondary" style="margin-left:8px" onclick="login()">Login</button>
+                    <div id="auth-response" class="response-box"></div>
+                </div>
+                <div>
+                    <div id="current-user" style="display:none">
+                        <div class="alert alert-success" id="login-status"></div>
+                        <div class="info-grid">
+                            <div class="info-item"><label>User ID</label><div class="info-value" id="user-id-display">-</div></div>
+                            <div class="info-item"><label>Username</label><div class="info-value" id="username-display">-</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Create Bot</h3>
+            <div class="form-group"><label>Bot Username</label><input id="bot-username" placeholder="MyBot" /></div>
+            <button class="btn btn-primary" onclick="createBot()">Create Bot & Get Token</button>
+            <div id="bot-response" class="response-box"></div>
+        </div>
+    </div>
+
+    <!-- GUILDS TAB -->
+    <div id="tab-guilds" class="tab-content">
+        <div class="section">
+            <h3>Create Guild (Server)</h3>
+            <div class="form-group"><label>Guild Name</label><input id="guild-name" placeholder="My Server" /></div>
+            <button class="btn btn-primary" onclick="createGuild()">Create Guild</button>
+            <div id="guild-response" class="response-box"></div>
+        </div>
+        <div class="section">
+            <h3>List Members</h3>
+            <div class="form-group"><label>Guild ID</label><input id="members-guild-id" placeholder="guild id" /></div>
+            <button class="btn btn-secondary" onclick="listMembers()">List Members</button>
+            <div id="members-list" class="members-list" style="margin-top:16px"></div>
+            <div id="members-response" class="response-box"></div>
+        </div>
+        <div class="section">
+            <h3>Kick / Ban User</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                <div class="form-group"><label>Guild ID</label><input id="action-guild-id" placeholder="guild id" /></div>
+                <div class="form-group"><label>User ID</label><input id="action-user-id" placeholder="user id" /></div>
+            </div>
+            <div class="form-group"><label>Ban Reason (optional)</label><input id="ban-reason" placeholder="reason" /></div>
+            <button class="btn btn-danger btn-sm" onclick="kickUser()">Kick</button>
+            <button class="btn btn-danger btn-sm" style="margin-left:8px" onclick="banUser()">Ban</button>
+            <div id="action-response" class="response-box"></div>
+        </div>
+    </div>
+
+    <!-- CHANNELS TAB -->
+    <div id="tab-channels" class="tab-content">
+        <div class="section">
+            <h3>Send Message</h3>
+            <div class="form-group"><label>Channel ID</label><input id="send-channel-id" placeholder="channel id" /></div>
+            <div class="form-group"><label>Message</label><input id="send-content" placeholder="Hello from Testcord!" /></div>
+            <button class="btn btn-primary" onclick="sendMessage()">Send Message</button>
+            <div id="send-response" class="response-box"></div>
+        </div>
+        <div class="section">
+            <h3>Get Messages</h3>
+            <div class="form-group"><label>Channel ID</label><input id="get-channel-id" placeholder="channel id" /></div>
+            <button class="btn btn-secondary" onclick="getMessages()">Fetch Messages</button>
+            <div id="get-response" class="response-box"></div>
+        </div>
+    </div>
+
+    <!-- API TESTER TAB -->
+    <div id="tab-api" class="tab-content">
+        <div class="section">
+            <h3>Raw API Request</h3>
+            <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:end">
+                <div class="form-group">
+                    <label>Method</label>
+                    <select id="api-method" style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;color:#e0e0e0;font-size:0.9rem;">
+                        <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Endpoint</label><input id="api-endpoint" placeholder="/users/@me" /></div>
+            </div>
+            <div class="form-group"><label>Body (JSON)</label><input id="api-body" placeholder='{"content": "hello"}' /></div>
+            <button class="btn btn-primary" onclick="apiRequest()">Send Request</button>
+            <div id="api-response" class="response-box"></div>
+        </div>
+        <div class="section">
+            <h3>Quick Endpoints</h3>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="quickApi('GET','/users/@me')">GET /users/@me</button>
+                <button class="btn btn-secondary btn-sm" onclick="quickApi('GET','/users/@me/guilds')">GET /users/@me/guilds</button>
+                <button class="btn btn-secondary btn-sm" onclick="quickApi('GET','/gateway')">GET /gateway</button>
+                <button class="btn btn-secondary btn-sm" onclick="quickApi('GET','/gateway/bot')">GET /gateway/bot</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Testcord — Discord-compatible self-hosted bot platform &nbsp;|&nbsp; Spring Boot + Java &nbsp;|&nbsp;
+        <a href="/h2-console" style="color:#5865f2">H2 Console</a>
+    </p>
+</footer>
+
+<script>
+let currentUserId = null;
+
+function getAuthHeader() {
+    const token = localStorage.getItem('tc_token');
+    if (token) return { 'Authorization': 'Bot ' + token };
+    return {};
+}
+
+function showResponse(id, data, isError) {
+    const el = document.getElementById(id);
+    el.style.display = 'block';
+    el.style.color = isError ? '#ed4245' : '#3fb950';
+    el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+
+async function apiCall(method, path, body) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', ...getAuthHeader() }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    const text = await res.text();
+    try { return { ok: res.ok, status: res.status, data: JSON.parse(text) }; }
+    catch { return { ok: res.ok, status: res.status, data: text }; }
+}
+
+async function register() {
+    const r = await apiCall('POST', '/api/auth/register', {
+        username: document.getElementById('reg-username').value,
+        password: document.getElementById('reg-password').value
+    });
+    showResponse('auth-response', r.data, !r.ok);
+}
+
+async function login() {
+    const r = await apiCall('POST', '/api/auth/login', {
+        username: document.getElementById('reg-username').value,
+        password: document.getElementById('reg-password').value
+    });
+    showResponse('auth-response', r.data, !r.ok);
+    if (r.ok && r.data.user) {
+        currentUserId = r.data.user_id;
+        document.getElementById('current-user').style.display = 'block';
+        document.getElementById('login-status').textContent = '✅ Logged in as ' + r.data.user.username;
+        document.getElementById('user-id-display').textContent = r.data.user.id;
+        document.getElementById('username-display').textContent = r.data.user.username;
+    }
+}
+
+async function createBot() {
+    const r = await apiCall('POST', '/api/auth/bots', { username: document.getElementById('bot-username').value });
+    showResponse('bot-response', r.data, !r.ok);
+    if (r.ok && r.data.token) {
+        localStorage.setItem('tc_token', r.data.token);
+        showResponse('bot-response', '✅ Bot created! Token saved to browser.\n\n' + JSON.stringify(r.data, null, 2), false);
+    }
+}
+
+async function createGuild() {
+    const r = await apiCall('POST', '/guilds', { name: document.getElementById('guild-name').value });
+    showResponse('guild-response', r.data, !r.ok);
+}
+
+async function listMembers() {
+    const guildId = document.getElementById('members-guild-id').value;
+    const r = await apiCall('GET', '/guilds/' + guildId + '/members');
+    showResponse('members-response', r.data, !r.ok);
+    if (r.ok && Array.isArray(r.data)) {
+        const list = document.getElementById('members-list');
+        list.innerHTML = r.data.map(m => `
+            <div class="member-item">
+                <div>
+                    <div class="member-name"><span class="status-dot status-online"></span>${m.user.username}${m.user.bot ? ' 🤖' : ''}</div>
+                    <div class="member-id">${m.user.id}</div>
+                </div>
+                <div class="member-actions">
+                    <button class="btn btn-danger btn-sm" onclick="kickById('${guildId}','${m.user.id}')">Kick</button>
+                </div>
+            </div>`).join('');
+    }
+}
+
+async function kickById(guildId, userId) {
+    const r = await apiCall('DELETE', '/guilds/' + guildId + '/members/' + userId);
+    alert(r.ok ? '✅ Kicked!' : '❌ Error: ' + JSON.stringify(r.data));
+    listMembers();
+}
+
+async function kickUser() {
+    const gId = document.getElementById('action-guild-id').value;
+    const uId = document.getElementById('action-user-id').value;
+    const r = await apiCall('DELETE', '/guilds/' + gId + '/members/' + uId);
+    showResponse('action-response', r.ok ? '✅ Kicked' : r.data, !r.ok);
+}
+
+async function banUser() {
+    const gId = document.getElementById('action-guild-id').value;
+    const uId = document.getElementById('action-user-id').value;
+    const reason = document.getElementById('ban-reason').value;
+    const r = await apiCall('POST', '/guilds/' + gId + '/bans/' + uId, { reason });
+    showResponse('action-response', r.ok ? '✅ Banned' : r.data, !r.ok);
+}
+
+async function sendMessage() {
+    const channelId = document.getElementById('send-channel-id').value;
+    const content = document.getElementById('send-content').value;
+    const r = await apiCall('POST', '/channels/' + channelId + '/messages', { content });
+    showResponse('send-response', r.data, !r.ok);
+}
+
+async function getMessages() {
+    const channelId = document.getElementById('get-channel-id').value;
+    const r = await apiCall('GET', '/channels/' + channelId + '/messages?limit=20');
+    showResponse('get-response', r.data, !r.ok);
+}
+
+async function apiRequest() {
+    const method = document.getElementById('api-method').value;
+    const endpoint = document.getElementById('api-endpoint').value;
+    const bodyStr = document.getElementById('api-body').value;
+    let body;
+    try { body = bodyStr ? JSON.parse(bodyStr) : undefined; } catch { body = undefined; }
+    const r = await apiCall(method, endpoint, body);
+    showResponse('api-response', { status: r.status, data: r.data }, !r.ok);
+}
+
+async function quickApi(method, endpoint) {
+    document.getElementById('api-method').value = method;
+    document.getElementById('api-endpoint').value = endpoint;
+    await apiRequest();
+    switchTab('api');
+}
+
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+        const tabs = ['auth','guilds','channels','api'];
+        t.classList.toggle('active', tabs[i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+}
+
+window.onload = () => {
+    const token = localStorage.getItem('tc_token');
+    if (token) {
+        console.log('Saved bot token found:', token.substring(0, 20) + '...');
+    }
+};
+</script>
+</body>
+</html>

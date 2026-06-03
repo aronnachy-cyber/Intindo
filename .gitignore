@@ -1,0 +1,9 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+testcord-db*
+*.mv.db
+*.trace.db
+.mvn/
