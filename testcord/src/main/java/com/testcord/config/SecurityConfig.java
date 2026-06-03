@@ -30,8 +30,10 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/",
                     "/index.html",
+                    "/favicon.ico",
                     "/dashboard/**",
                     "/static/**",
+                    "/assets/**",
                     "/api/auth/**",
                     "/oauth2/**",
                     "/gateway",
