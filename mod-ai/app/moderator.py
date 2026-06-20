@@ -9,6 +9,26 @@ logger = logging.getLogger("mod-ai")
 
 profanity.load_censor_words()
 
+_detoxify_model = None
+_model_loaded = False
+_model_error = None
+
+
+def _load_model():
+    global _detoxify_model, _model_loaded, _model_error
+    if _model_loaded:
+        return
+    try:
+        from detoxify import Detoxify
+        _detoxify_model = Detoxify("original")
+        _model_loaded = True
+        logger.info("Detoxify model loaded successfully")
+    except Exception as e:
+        _model_error = str(e)
+        _model_loaded = True
+        logger.warning(f"Detoxify failed to load, using fallback: {e}")
+
+
 SPAM_PATTERNS = [
     r"(https?://\S+){3,}",
     r"(.)\1{8,}",
@@ -30,16 +50,6 @@ SEXUAL_PATTERNS = [
     r"(?i)(nsfw|porn|xxx|onlyfans|nude|naked)",
 ]
 
-HATE_PATTERNS = [
-    r"(?i)(slur|racial slur|go back to your country|you people are all)",
-    r"(?i)(hate all \w+|death to \w+|exterminate \w+)",
-]
-
-HARASSMENT_PATTERNS = [
-    r"(?i)(you're a loser|you're pathetic|nobody likes you|kill yourself|kys)",
-    r"(?i)(you're so stupid|idiot|moron|retard)",
-]
-
 
 def _pattern_score(text: str, patterns: list) -> float:
     for p in patterns:
@@ -48,15 +58,45 @@ def _pattern_score(text: str, patterns: list) -> float:
     return 0.0
 
 
+def _ai_scores(text: str) -> dict:
+    if _detoxify_model is not None:
+        try:
+            results = _detoxify_model.predict(text)
+            return {
+                "toxicity":        float(results.get("toxicity", 0)),
+                "severe_toxicity": float(results.get("severe_toxicity", 0)),
+                "obscene":         float(results.get("obscene", 0)),
+                "threat":          float(results.get("threat", 0)),
+                "insult":          float(results.get("insult", 0)),
+                "identity_attack": float(results.get("identity_attack", 0)),
+            }
+        except Exception:
+            pass
+
+    return {
+        "toxicity":        0.0,
+        "severe_toxicity": 0.0,
+        "obscene":         0.0,
+        "threat":          0.0,
+        "insult":          0.0,
+        "identity_attack": 0.0,
+    }
+
+
 def moderate(text: str) -> dict:
-    profanity_hit   = profanity.contains_profanity(text)
-    spam_score      = _pattern_score(text, SPAM_PATTERNS)
-    self_harm_score = _pattern_score(text, SELF_HARM_PATTERNS)
-    violence_score  = _pattern_score(text, THREAT_PATTERNS)
-    sexual_score    = _pattern_score(text, SEXUAL_PATTERNS)
-    hate_score      = _pattern_score(text, HATE_PATTERNS)
-    harassment_score = _pattern_score(text, HARASSMENT_PATTERNS)
-    toxicity_score  = 0.85 if profanity_hit else 0.0
+    _load_model()
+
+    ai = _ai_scores(text)
+
+    profanity_hit = profanity.contains_profanity(text)
+    spam_score    = _pattern_score(text, SPAM_PATTERNS)
+    self_harm_score = max(_pattern_score(text, SELF_HARM_PATTERNS), ai.get("threat", 0) * 0.5)
+    sexual_score  = max(_pattern_score(text, SEXUAL_PATTERNS), ai.get("obscene", 0))
+    violence_score = max(_pattern_score(text, THREAT_PATTERNS), ai.get("threat", 0))
+
+    toxicity_score   = max(ai["toxicity"], 0.85 if profanity_hit else 0.0)
+    hate_score       = ai["identity_attack"]
+    harassment_score = max(ai["insult"], ai["severe_toxicity"])
 
     THRESHOLD = 0.65
 
@@ -93,11 +133,11 @@ def moderate(text: str) -> dict:
         action = "flag"
 
     return {
-        "flagged":         flagged,
-        "action":          action,
-        "categories":      categories,
-        "category_scores": scores,
-        "model_backend":   "mod-1.0-rules",
+        "flagged":          flagged,
+        "action":           action,
+        "categories":       categories,
+        "category_scores":  scores,
+        "model_backend":    "detoxify+rules" if _detoxify_model else "rules",
     }
 
 
@@ -114,7 +154,6 @@ def build_moderation_result(text: str) -> dict:
 def build_analysis_result(text: str) -> dict:
     result = moderate(text)
     flagged_cats = [k for k, v in result["categories"].items() if v]
-
     severity = "none"
     if result["categories"]["violence"] or result["categories"]["self-harm"]:
         severity = "critical"
@@ -124,17 +163,17 @@ def build_analysis_result(text: str) -> dict:
         severity = "medium"
 
     return {
-        "id":                 f"anal-{uuid.uuid4().hex[:20]}",
-        "model":              "mod-1.0",
-        "created":            int(time.time()),
-        "input":              text,
-        "flagged":            result["flagged"],
-        "severity":           severity,
-        "action":             result["action"],
+        "id":              f"anal-{uuid.uuid4().hex[:20]}",
+        "model":           "mod-1.0",
+        "created":         int(time.time()),
+        "input":           text,
+        "flagged":         result["flagged"],
+        "severity":        severity,
+        "action":          result["action"],
         "flagged_categories": flagged_cats,
-        "categories":         result["categories"],
-        "category_scores":    result["category_scores"],
-        "model_backend":      result["model_backend"],
+        "categories":      result["categories"],
+        "category_scores": result["category_scores"],
+        "model_backend":   result["model_backend"],
         "recommendation": {
             "action":  result["action"],
             "message": _recommendation_message(result),
@@ -146,17 +185,21 @@ def build_classify_result(text: str, categories: Optional[list] = None) -> dict:
     result = moderate(text)
     all_cats = result["category_scores"]
 
-    filtered = {k: v for k, v in all_cats.items() if k in categories} if categories else all_cats
+    if categories:
+        filtered = {k: v for k, v in all_cats.items() if k in categories}
+    else:
+        filtered = all_cats
+
     top = max(filtered, key=filtered.get) if filtered else "none"
 
     return {
-        "id":           f"cls-{uuid.uuid4().hex[:20]}",
-        "model":        "mod-1.0",
-        "created":      int(time.time()),
-        "input":        text,
+        "id":         f"cls-{uuid.uuid4().hex[:20]}",
+        "model":      "mod-1.0",
+        "created":    int(time.time()),
+        "input":      text,
         "top_category": top,
-        "scores":       filtered,
-        "flagged":      result["flagged"],
+        "scores":     filtered,
+        "flagged":    result["flagged"],
     }
 
 
