@@ -9,6 +9,8 @@ services:
     envVars:
       - key: ADMIN_KEY
         generateValue: true
+      - key: BASE_URL
+        sync: false
       - key: PYTHON_VERSION
         value: "3.11.0"
     healthCheckPath: /health
