@@ -42,4 +42,3 @@ run = ["bash", "-c", "cd testcord && mvn spring-boot:run"]
 [userenv]
 
 [userenv.shared]
-ADMIN_KEY = "80f7a5b25081da034a11dd8784f0392ef59ab30295ff4d7f208805586c65f1e0"
